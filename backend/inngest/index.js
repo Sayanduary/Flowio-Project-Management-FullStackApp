@@ -2,7 +2,7 @@ import { Inngest } from "inngest";
 import prisma from "../config/db.js";
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: "project-management" });
+export const inngest = new Inngest({ id: "project-management", isDev: true });
 
 // Inngest Function to save user data to a database
 
@@ -115,23 +115,38 @@ const syncUserUpdation = inngest.createFunction(
 const syncWorkspaceCreation = inngest.createFunction(
   {
     id: "sync-workspace-from-clerk",
-    triggers: { event: "clerk/organization.created" },
+    triggers: {
+      event: "clerk/organization.created",
+    },
   },
   async ({ event }) => {
-    const { data } = event;
-    await prisma.workspace.create({
-      data: {
-        id: data.id,
-        name: data.name,
-        slug: data.slug,
-        owner: data.created_by,
-        image_url: data.image_url,
-      },
-    });
-    // Add creator as ADMIN member
-    await prisma.workspaceMember.create({
-      data: { userId: data.created_by, workspaceId: data.id, role: "ADMIN" },
-    });
+    try {
+      const { data } = event;
+
+      console.log("Creating workspace:", data);
+
+      await prisma.workspace.create({
+        data: {
+          id: data.id,
+          name: data.name,
+          slug: data.slug,
+          ownerId: data.created_by,
+          image_url: data.image_url || "",
+
+          members: {
+            create: {
+              userId: data.created_by,
+              role: "ADMIN",
+            },
+          },
+        },
+      });
+
+      console.log("Workspace created successfully:", data.id);
+    } catch (error) {
+      console.error("Error in syncWorkspaceCreation:", error);
+      throw error;
+    }
   },
 );
 
@@ -140,20 +155,29 @@ const syncWorkspaceCreation = inngest.createFunction(
 const syncWorkspaceUpdation = inngest.createFunction(
   {
     id: "update-workspace-from-clerk",
-
-    triggers: { event: "clerk/organization.updated" },
+    triggers: {
+      event: "clerk/organization.updated",
+    },
   },
   async ({ event }) => {
-    const { data } = event;
-    await prisma.workspace.update({
-      where: { id: data.id },
-      data: {
-        name: data.name,
-        slug: data.slug,
-        owner: data.created_by,
-        image_url: data.image_url,
-      },
-    });
+    try {
+      const { data } = event;
+
+      await prisma.workspace.update({
+        where: {
+          id: data.id,
+        },
+        data: {
+          name: data.name,
+          slug: data.slug,
+          ownerId: data.created_by,
+          image_url: data.image_url || "",
+        },
+      });
+    } catch (error) {
+      console.error("Error in syncWorkspaceUpdation:", error);
+      throw error;
+    }
   },
 );
 
@@ -176,20 +200,31 @@ const syncWorkspaceDeletion = inngest.createFunction(
 
 //inngest function to save workspace member data to a database
 
-const syncWorkspaceMemnerCreation = inngest.createFunction(
+const syncWorkspaceMemberCreation = inngest.createFunction(
   {
     id: "sync-workspace-member-from-clerk",
-    triggers: { event: "clerk/organizationInvitation.accepted" },
+    triggers: {
+      event: "clerk/organizationInvitation.accepted",
+    },
   },
   async ({ event }) => {
-    const { data } = event;
-    await prisma.workspaceMember.create({
-      data: {
-        userId: data.user_id,
-        workspaceId: data.organization_id,
-        role: String(data.role_name).toUpperCase(),
-      },
-    });
+    try {
+      const { data } = event;
+
+      const role =
+        String(data.role_name).toUpperCase() === "ADMIN" ? "ADMIN" : "MEMBER";
+
+      await prisma.workspaceMember.create({
+        data: {
+          userId: data.user_id,
+          workspaceId: data.organization_id,
+          role,
+        },
+      });
+    } catch (error) {
+      console.error("Error in syncWorkspaceMemberCreation:", error);
+      throw error;
+    }
   },
 );
 
@@ -201,5 +236,5 @@ export const functions = [
   syncWorkspaceCreation,
   syncWorkspaceUpdation,
   syncWorkspaceDeletion,
-  syncWorkspaceMemnerCreation,
+  syncWorkspaceMemberCreation,
 ];
