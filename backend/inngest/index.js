@@ -2,7 +2,7 @@ import { Inngest } from "inngest";
 import prisma from "../config/db.js";
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: "project-management", isDev: true });
+export const inngest = new Inngest({ id: "project-management" });
 
 // Inngest Function to save user data to a database
 
