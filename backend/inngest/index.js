@@ -1,5 +1,6 @@
 import { Inngest } from "inngest";
 import prisma from "../config/db.js";
+import sendEmail from "../utils/nodemailer.js";
 
 // Production Inngest client
 export const inngest = new Inngest({
@@ -24,7 +25,8 @@ const syncUserCreation = inngest.createFunction(
       const email =
         data.email_addresses?.[0]?.email_address || data.email || "";
 
-      const rawName = `${data?.first_name || ""} ${data?.last_name || ""}`.trim();
+      const rawName =
+        `${data?.first_name || ""} ${data?.last_name || ""}`.trim();
       const name =
         rawName ||
         data?.username ||
@@ -86,11 +88,10 @@ const syncUserUpdation = inngest.createFunction(
       const email =
         data.email_addresses?.[0]?.email_address || data.email || "";
 
-      const rawName = `${data?.first_name || ""} ${data?.last_name || ""}`.trim();
+      const rawName =
+        `${data?.first_name || ""} ${data?.last_name || ""}`.trim();
       const name =
-        rawName ||
-        data?.username ||
-        (email ? email.split("@")[0] : "");
+        rawName || data?.username || (email ? email.split("@")[0] : "");
 
       if (!data.id) {
         console.warn("Missing required user id for update");
@@ -480,6 +481,177 @@ const syncWorkspaceMemberCreation = inngest.createFunction(
   },
 );
 
+// Ingest Function to send Email on Task Creation
+
+const sendTaskAssignmentEmail = inngest.createFunction(
+  {
+    id: "send-task-assignment-email",
+    triggers: {
+      event: "app/task.assigned",
+    },
+  },
+
+  async ({ event, step }) => {
+    try {
+      const { taskId, origin } = event.data;
+
+      if (!taskId) {
+        throw new Error("taskId is required");
+      }
+
+      // ==========================================
+      // Get task
+      // ==========================================
+      const task = await prisma.task.findUnique({
+        where: {
+          id: taskId,
+        },
+        include: {
+          assignee: true,
+          project: true,
+        },
+      });
+
+      if (!task) {
+        throw new Error(`Task ${taskId} not found`);
+      }
+
+      if (!task.assignee) {
+        throw new Error(`Task ${taskId} does not have an assignee`);
+      }
+
+      // ==========================================
+      // Task URL
+      // ==========================================
+      const taskUrl = origin ? `${origin}/tasks/${task.id}` : "";
+
+      // ==========================================
+      // Send assignment email
+      // ==========================================
+      await step.run("send-task-assignment-email", async () => {
+        await sendEmail({
+          to: task.assignee.email,
+
+          subject: `New Task Assignment - ${task.title}`,
+
+          body: `
+Hi ${task.assignee.name},
+
+You have been assigned a new task.
+
+Task: ${task.title}
+Project: ${task.project.name}
+Priority: ${task.priority}
+Status: ${task.status}
+Due Date: ${new Date(task.due_date).toLocaleDateString()}
+
+${
+  task.description
+    ? `Description:
+${task.description}`
+    : ""
+}
+
+${
+  taskUrl
+    ? `View Task:
+${taskUrl}`
+    : ""
+}
+
+Please make sure to review and complete the task before the due date.
+
+Best regards,
+Flowio Team
+            `,
+        });
+      });
+
+      // ==========================================
+      // Wait until due date
+      // ==========================================
+      const dueDate = new Date(task.due_date);
+
+      if (dueDate > new Date()) {
+        await step.sleepUntil("wait-for-the-due-date", dueDate);
+      }
+
+      // ==========================================
+      // Check task again after waiting
+      // ==========================================
+      await step.run("check-if-task-is-completed", async () => {
+        const currentTask = await prisma.task.findUnique({
+          where: {
+            id: taskId,
+          },
+          include: {
+            assignee: true,
+            project: true,
+          },
+        });
+
+        if (!currentTask) {
+          console.log(`Task ${taskId} no longer exists`);
+          return;
+        }
+
+        // ==========================================
+        // Send reminder only if not completed
+        // ==========================================
+        if (currentTask.status !== "DONE") {
+          await sendEmail({
+            to: currentTask.assignee.email,
+
+            subject: `Task Due - ${currentTask.title}`,
+
+            body: `
+Hi ${currentTask.assignee.name},
+
+Your task "${currentTask.title}" is due today.
+
+Project: ${currentTask.project.name}
+Priority: ${currentTask.priority}
+Status: ${currentTask.status}
+Due Date: ${new Date(currentTask.due_date).toLocaleDateString()}
+
+${
+  currentTask.description
+    ? `Description:
+${currentTask.description}`
+    : ""
+}
+
+${
+  taskUrl
+    ? `View Task:
+${taskUrl}`
+    : ""
+}
+
+Please make sure to review and complete it.
+
+Best regards,
+Flowio Team
+              `,
+          });
+
+          console.log(`Due-date reminder sent for task ${taskId}`);
+        } else {
+          console.log(`Task ${taskId} is already completed. No reminder sent.`);
+        }
+      });
+
+      return {
+        success: true,
+        taskId,
+      };
+    } catch (error) {
+      console.error("Task Assignment Email Error:", error);
+
+      throw error;
+    }
+  },
+);
 /*
 |--------------------------------------------------------------------------
 | EXPORT FUNCTIONS
@@ -496,4 +668,5 @@ export const functions = [
   syncWorkspaceDeletion,
 
   syncWorkspaceMemberCreation,
+  sendTaskAssignmentEmail,
 ];
