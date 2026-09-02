@@ -43,6 +43,10 @@ app.use("/api/workspaces", protect, workspaceRouter);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server Running on Port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server Running on Port ${PORT}`);
+  });
+}
+
+export default app;
