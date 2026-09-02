@@ -132,7 +132,14 @@ export const updateTask = async (req, res) => {
   try {
     const { userId } = await req.auth();
 
-    const { taskId } = req.params;
+    const taskId =
+      req.params.taskId || req.params.id || req.body.taskId || req.body.id;
+
+    if (!taskId) {
+      return res.status(400).json({
+        message: "taskId is required",
+      });
+    }
 
     const { title, description, type, status, priority, assigneeId, due_date } =
       req.body;
@@ -251,7 +258,14 @@ export const deleteTask = async (req, res) => {
   try {
     const { userId } = await req.auth();
 
-    const { taskId } = req.params;
+    const taskId =
+      req.params.taskId || req.params.id || req.body.taskId || req.body.id;
+
+    if (!taskId) {
+      return res.status(400).json({
+        message: "taskId is required",
+      });
+    }
 
     // Find task
     const task = await prisma.task.findUnique({

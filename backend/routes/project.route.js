@@ -7,6 +7,7 @@ import {
 const projectRouter = express.Router();
 
 projectRouter.post("/", createProject);
+projectRouter.put("/:projectId", updateProject);
 projectRouter.put("/", updateProject);
 projectRouter.post("/:projectId/addMember", addMember);
 

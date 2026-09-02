@@ -156,7 +156,14 @@ export const updateProject = async (req, res) => {
   try {
     const { userId } = await req.auth();
 
-    const { projectId } = req.params;
+    const projectId =
+      req.params.projectId || req.params.id || req.body.projectId || req.body.id;
+
+    if (!projectId) {
+      return res.status(400).json({
+        message: "projectId is required",
+      });
+    }
 
     const {
       name,
@@ -304,7 +311,15 @@ export const addMember = async (req, res) => {
   try {
     const { userId } = await req.auth();
 
-    const { projectId } = req.params;
+    const projectId =
+      req.params.projectId || req.params.id || req.body.projectId;
+
+    if (!projectId) {
+      return res.status(400).json({
+        message: "projectId is required",
+      });
+    }
+
     const { memberId } = req.body;
 
     if (!memberId) {

@@ -6,7 +6,16 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["generated/**", "prisma/**", "config/**", "inngest/**"]
+        "includeFiles": [
+          "generated/**",
+          "prisma/**",
+          "config/**",
+          "inngest/**",
+          "routes/**",
+          "controller/**",
+          "middleware/**",
+          "utils/**"
+        ]
       }
     }
   ],
