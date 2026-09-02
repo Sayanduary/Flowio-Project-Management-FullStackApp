@@ -1,11 +1,12 @@
 {
   "version": 2,
+  "buildCommand": "npm install && npm run postinstall",
   "builds": [
     {
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/**"]
+        "includeFiles": ["generated/**", "prisma/**", "config/**", "inngest/**"]
       }
     }
   ],
