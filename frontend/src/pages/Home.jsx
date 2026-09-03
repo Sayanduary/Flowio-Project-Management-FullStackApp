@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../features/themeSlice";
@@ -25,6 +25,10 @@ import {
   FolderKanban,
   Boxes,
 } from "lucide-react";
+import ScrollReveal from "../components/ScrollReveal";
+import AnimatedCounter from "../components/AnimatedCounter";
+import { MobileMenu, MenuToggleButton } from "../components/MobileMenu";
+import BackToTop from "../components/BackToTop";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -40,6 +44,21 @@ const Home = () => {
     task2: true,
     task3: false,
   });
+
+  // Mobile menu state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Testimonial carousel state
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const testimonialCount = 3;
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonialCount);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [testimonialCount]);
 
   const toggleDemoTask = (id) => {
     setCompletedDemoTasks((prev) => ({
@@ -130,12 +149,18 @@ const Home = () => {
               )}
             </button>
 
+            {/* Mobile Menu Toggle */}
+            <MenuToggleButton
+              isOpen={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            />
+
             {/* Auth CTA */}
             {isLoaded && user ? (
               <div className="flex items-center gap-3">
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Go to Dashboard</span>
                   <ArrowRight className="size-4" />
@@ -143,7 +168,7 @@ const Home = () => {
                 <UserButton afterSignOutUrl="/" />
               </div>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                 <Link
                   to="/sign-in"
                   className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-sm font-medium rounded-lg text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"
@@ -163,106 +188,223 @@ const Home = () => {
         </div>
       </header>
 
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+
       {/* HERO SECTION */}
       <section className="relative z-10 pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium mb-8 backdrop-blur-sm animate-pulse">
-            <Sparkles className="size-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Flowio 2.0 is live — Built for high-velocity teams</span>
-            <ArrowRight className="size-3" />
-          </div>
+          <ScrollReveal delay={100}>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium mb-8 backdrop-blur-sm animate-pulse">
+              <Sparkles className="size-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Flowio 2.0 is live — Built for high-velocity teams</span>
+              <ArrowRight className="size-3" />
+            </div>
+          </ScrollReveal>
 
           {/* Heading */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-950 dark:text-white max-w-4xl mx-auto leading-[1.15]">
-            Plan effortlessly. <br className="hidden sm:inline" />
-            Collaborate in sync. <br />
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              Ship on time.
-            </span>
-          </h1>
+          <ScrollReveal delay={200}>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-950 dark:text-white max-w-4xl mx-auto leading-[1.15]">
+              Plan effortlessly. <br className="hidden sm:inline" />
+              Collaborate in sync. <br />
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                Ship on time.
+              </span>
+            </h1>
+          </ScrollReveal>
 
           {/* Subtitle */}
-          <p className="mt-6 text-lg sm:text-xl text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            The all-in-one project management hub with fluid Kanban boards, team workspaces, real-time analytics, and task workflows tailored for modern builders.
-          </p>
+          <ScrollReveal delay={350}>
+            <p className="mt-6 text-lg sm:text-xl text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              The all-in-one project management hub with fluid Kanban boards, team workspaces, real-time analytics, and task workflows tailored for modern builders.
+            </p>
+          </ScrollReveal>
 
           {/* Hero Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => navigate(user ? "/dashboard" : "/sign-in")}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white shadow-xl shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>{user ? "Open Workspace" : "Start Free Today"}</span>
-              <ArrowRight className="size-4" />
-            </button>
-            <a
-              href="#demo"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold rounded-xl border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800/80 text-slate-800 dark:text-zinc-200 transition-all shadow-sm"
-            >
-              <Kanban className="size-4 text-blue-500" />
-              <span>Explore Interactive Demo</span>
-            </a>
-          </div>
+          <ScrollReveal delay={500}>
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => navigate(user ? "/dashboard" : "/sign-in")}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white shadow-xl shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>{user ? "Open Workspace" : "Start Free Today"}</span>
+                <ArrowRight className="size-4" />
+              </button>
+              <a
+                href="#demo"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold rounded-xl border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800/80 text-slate-800 dark:text-zinc-200 transition-all shadow-sm"
+              >
+                <Kanban className="size-4 text-blue-500" />
+                <span>Explore Interactive Demo</span>
+              </a>
+            </div>
+          </ScrollReveal>
+
+          {/* Hero Product Mockup */}
+          <ScrollReveal delay={400} className="mt-16">
+            <div className="relative max-w-4xl mx-auto">
+              {/* Glow effect behind mockup */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-violet-500/20 blur-3xl rounded-full scale-75" />
+              <div className="relative rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-2xl shadow-blue-500/10 overflow-hidden">
+                {/* Mockup window bar */}
+                <div className="px-4 py-2.5 bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-red-400" />
+                  <span className="size-2.5 rounded-full bg-amber-400" />
+                  <span className="size-2.5 rounded-full bg-emerald-400" />
+                  <span className="ml-2 text-[10px] font-mono text-slate-400 dark:text-zinc-500">flowio.app/workspace</span>
+                </div>
+                {/* Mini dashboard content */}
+                <div className="p-4 sm:p-6 grid grid-cols-3 gap-3 sm:gap-4">
+                  <div className="col-span-1 space-y-3">
+                    <div className="h-3 bg-slate-200 dark:bg-zinc-800 rounded-full w-3/4" />
+                    <div className="h-2 bg-slate-100 dark:bg-zinc-800/50 rounded-full w-full" />
+                    <div className="h-2 bg-slate-100 dark:bg-zinc-800/50 rounded-full w-5/6" />
+                    <div className="h-2 bg-slate-100 dark:bg-zinc-800/50 rounded-full w-2/3" />
+                    <div className="mt-4 flex -space-x-2">
+                      <div className="size-7 rounded-full bg-blue-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] text-white font-bold">A</div>
+                      <div className="size-7 rounded-full bg-indigo-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] text-white font-bold">B</div>
+                      <div className="size-7 rounded-full bg-violet-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] text-white font-bold">C</div>
+                    </div>
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <div className="flex gap-2">
+                      <div className="flex-1 p-2 sm:p-3 rounded-lg bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="size-1.5 rounded-full bg-slate-400" />
+                          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-400">To Do</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="p-1.5 sm:p-2 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
+                            <div className="h-1.5 bg-blue-200 dark:bg-blue-900/40 rounded w-1/2 mb-1" />
+                            <div className="h-1 bg-slate-200 dark:bg-zinc-800 rounded w-3/4" />
+                          </div>
+                          <div className="p-1.5 sm:p-2 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
+                            <div className="h-1.5 bg-amber-200 dark:bg-amber-900/40 rounded w-1/3 mb-1" />
+                            <div className="h-1 bg-slate-200 dark:bg-zinc-800 rounded w-2/3" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 p-2 sm:p-3 rounded-lg bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="size-1.5 rounded-full bg-blue-500" />
+                          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-400">In Progress</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="p-1.5 sm:p-2 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
+                            <div className="h-1.5 bg-indigo-200 dark:bg-indigo-900/40 rounded w-2/3 mb-1" />
+                            <div className="h-1 bg-slate-200 dark:bg-zinc-800 rounded w-4/5" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 p-2 sm:p-3 rounded-lg bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="size-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-400">Done</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="p-1.5 sm:p-2 rounded bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 opacity-70">
+                            <div className="h-1.5 bg-emerald-200 dark:bg-emerald-900/40 rounded w-1/2 mb-1" />
+                            <div className="h-1 bg-slate-200 dark:bg-zinc-800 rounded w-3/5 line-through" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
 
           {/* Metrics Pill */}
-          <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-zinc-800/60 max-w-3xl mx-auto grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">99.9%</p>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Uptime SLA</p>
+          <ScrollReveal delay={650}>
+            <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-zinc-800/60 max-w-3xl mx-auto grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+                  <AnimatedCounter end={99.9} decimals={1} suffix="%" />
+                </p>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Uptime SLA</p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+                  <AnimatedCounter end={45000} suffix="+" />
+                </p>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Tasks Delivered</p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+                  <AnimatedCounter end={3.4} decimals={1} suffix="x" />
+                </p>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Sprint Velocity</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">45,000+</p>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Tasks Delivered</p>
-            </div>
-            <div>
-              <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">3.4x</p>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Sprint Velocity</p>
-            </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
+
+      {/* LOGO CLOUD - TRUSTED BY */}
+      <ScrollReveal>
+        <section className="relative z-10 py-12">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-8">
+              Trusted by forward-thinking teams
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-40 dark:opacity-30">
+              {["Prism", "NexusLab", "Vercel", "Stripe", "Linear", "Notion"].map((name) => (
+                <span
+                  key={name}
+                  className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white hover:opacity-100 transition-opacity cursor-default"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
 
       {/* INTERACTIVE WORKSPACE DEMO SECTION */}
       <section id="demo" className="relative z-10 py-16 bg-slate-100/70 dark:bg-zinc-900/40 border-y border-slate-200/80 dark:border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Interactive Preview
-            </h2>
-            <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
-              Experience the Flowio workspace interface
-            </h3>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-zinc-400 max-w-xl mx-auto">
-              Test out the live interactive preview below. Switch views or toggle task completion status right inside this mockup.
-            </p>
+          <ScrollReveal>
+            <div className="text-center mb-10">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Interactive Preview
+              </h2>
+              <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
+                Experience the Flowio workspace interface
+              </h3>
+              <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-zinc-400 max-w-xl mx-auto">
+                Test out the live interactive preview below. Switch views or toggle task completion status right inside this mockup.
+              </p>
 
-            {/* View Selector Tabs */}
-            <div className="mt-6 inline-flex p-1 bg-slate-200/80 dark:bg-zinc-800 rounded-xl">
-              <button
-                onClick={() => setActiveTab("kanban")}
-                className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
-                  activeTab === "kanban"
-                    ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                <Kanban className="size-4" />
-                <span>Kanban Board</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
-                  activeTab === "analytics"
-                    ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                <BarChart3 className="size-4" />
-                <span>Sprint Analytics</span>
-              </button>
+              {/* View Selector Tabs */}
+              <div className="mt-6 inline-flex p-1 bg-slate-200/80 dark:bg-zinc-800 rounded-xl">
+                <button
+                  onClick={() => setActiveTab("kanban")}
+                  className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
+                    activeTab === "kanban"
+                      ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <Kanban className="size-4" />
+                  <span>Kanban Board</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all ${
+                    activeTab === "analytics"
+                      ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <BarChart3 className="size-4" />
+                  <span>Sprint Analytics</span>
+                </button>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Interactive Window Mockup */}
           <div className="rounded-2xl border border-slate-300/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-2xl shadow-blue-500/5 overflow-hidden">
@@ -468,96 +610,110 @@ const Home = () => {
       {/* CORE FEATURES GRID */}
       <section id="features" className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Everything You Need
-            </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-              Crafted for modern software teams who value speed and clarity
-            </h3>
-            <p className="mt-3 text-slate-600 dark:text-zinc-400">
-              Flowio blends powerful project management primitives with an interface that gets out of your way.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Everything You Need
+              </h2>
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight">
+                Crafted for modern software teams who value speed and clarity
+              </h3>
+              <p className="mt-3 text-slate-600 dark:text-zinc-400">
+                Flowio blends powerful project management primitives with an interface that gets out of your way.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-blue-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Kanban className="size-6" />
+            <ScrollReveal delay={0}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-blue-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Kanban className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Fluid Kanban Boards
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Organize work visually with customizable columns, priority flags, tag filters, and instantaneous drag-and-drop state updates.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Fluid Kanban Boards
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Organize work visually with customizable columns, priority flags, tag filters, and instantaneous drag-and-drop state updates.
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Feature 2 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-indigo-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Users className="size-6" />
+            <ScrollReveal delay={80}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-indigo-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Team Workspaces
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Isolate departments or clients with dedicated workspaces. Assign granular roles (Admin, Member) with full permission security.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Team Workspaces
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Isolate departments or clients with dedicated workspaces. Assign granular roles (Admin, Member) with full permission security.
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Feature 3 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-violet-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <BarChart3 className="size-6" />
+            <ScrollReveal delay={160}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-violet-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <BarChart3 className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Actionable Velocity Metrics
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Stay on top of sprint timelines, burndown charts, cycle time, and workload distribution across all active contributors.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Actionable Velocity Metrics
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Stay on top of sprint timelines, burndown charts, cycle time, and workload distribution across all active contributors.
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Feature 4 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-amber-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Flame className="size-6" />
+            <ScrollReveal delay={240}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-amber-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Flame className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Priority & Deadline Tracking
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Never drop the ball on critical deliverables with intelligent visual cues, automated due date reminders, and priority escalation.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Priority & Deadline Tracking
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Never drop the ball on critical deliverables with intelligent visual cues, automated due date reminders, and priority escalation.
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Feature 5 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-emerald-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Zap className="size-6" />
+            <ScrollReveal delay={320}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-emerald-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Zap className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Blazing Fast Performance
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Built on top of Vite and React 19 for instantaneous page loads, zero UI lag, and smooth real-time optimistic mutations.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Blazing Fast Performance
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Built on top of Vite and React 19 for instantaneous page loads, zero UI lag, and smooth real-time optimistic mutations.
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Feature 6 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-cyan-500/40 transition-all group">
-              <div className="size-11 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Shield className="size-6" />
+            <ScrollReveal delay={400}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:shadow-lg hover:border-cyan-500/40 transition-all group">
+                <div className="size-11 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Shield className="size-6" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  Enterprise Authentication
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  Secured by Clerk with multi-factor authentication, organization invites, session controls, and strict workspace isolation.
+                </p>
               </div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                Enterprise Authentication
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                Secured by Clerk with multi-factor authentication, organization invites, session controls, and strict workspace isolation.
-              </p>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -565,48 +721,56 @@ const Home = () => {
       {/* 3-STEP WORKFLOW */}
       <section id="workflow" className="relative z-10 py-20 bg-slate-100/60 dark:bg-zinc-900/30 border-y border-slate-200 dark:border-zinc-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Simple 3-Step Setup
-            </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
-              From idea to shipment in minutes
-            </h3>
-          </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Simple 3-Step Setup
+              </h2>
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
+                From idea to shipment in minutes
+              </h3>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Step 1 */}
-            <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
-              <span className="text-4xl font-extrabold text-blue-600/20 dark:text-blue-400/20 font-mono">01</span>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
-                Create Workspace
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Set up your company or project workspace. Invite teammates with one click and configure custom role access.
-              </p>
-            </div>
+            <ScrollReveal delay={0}>
+              <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 h-full">
+                <span className="text-4xl font-extrabold text-blue-600/20 dark:text-blue-400/20 font-mono">01</span>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
+                  Create Workspace
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400">
+                  Set up your company or project workspace. Invite teammates with one click and configure custom role access.
+                </p>
+              </div>
+            </ScrollReveal>
 
             {/* Step 2 */}
-            <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
-              <span className="text-4xl font-extrabold text-indigo-600/20 dark:text-indigo-400/20 font-mono">02</span>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
-                Structure Sprints & Tasks
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Break milestones into bite-sized tasks, assign owners, set priorities, and collaborate via in-task comment threads.
-              </p>
-            </div>
+            <ScrollReveal delay={100}>
+              <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 h-full">
+                <span className="text-4xl font-extrabold text-indigo-600/20 dark:text-indigo-400/20 font-mono">02</span>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
+                  Structure Sprints & Tasks
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400">
+                  Break milestones into bite-sized tasks, assign owners, set priorities, and collaborate via in-task comment threads.
+                </p>
+              </div>
+            </ScrollReveal>
 
             {/* Step 3 */}
-            <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
-              <span className="text-4xl font-extrabold text-violet-600/20 dark:text-violet-400/20 font-mono">03</span>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
-                Track Velocity & Ship
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-zinc-400">
-                Monitor burndown charts, review pull request integrations, and celebrate shipping on target every cycle.
-              </p>
-            </div>
+            <ScrollReveal delay={200}>
+              <div className="relative p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 h-full">
+                <span className="text-4xl font-extrabold text-violet-600/20 dark:text-violet-400/20 font-mono">03</span>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-2 mb-2">
+                  Track Velocity & Ship
+                </h4>
+                <p className="text-sm text-slate-600 dark:text-zinc-400">
+                  Monitor burndown charts, review pull request integrations, and celebrate shipping on target every cycle.
+                </p>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -614,83 +778,163 @@ const Home = () => {
       {/* TESTIMONIALS SECTION */}
       <section id="testimonials" className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Loved by Engineers & Leaders
-            </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
-              Trusted across engineering, product, and design
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Testimonial 1 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="size-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
-                  “Flowio cut our weekly sprint planning overhead by half. The Kanban UI is clean, responsive, and doesn't get bogged down by endless enterprise bloat.”
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
-                <div className="size-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-                  EW
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Elena Walsh</h5>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">VP of Engineering at Prism</p>
-                </div>
-              </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Loved by Engineers & Leaders
+              </h2>
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
+                Trusted across engineering, product, and design
+              </h3>
             </div>
+          </ScrollReveal>
+
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-3 gap-6">
+            {/* Testimonial 1 */}
+            <ScrollReveal delay={0}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-1 text-amber-400 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="size-4 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
+                    "Flowio cut our weekly sprint planning overhead by half. The Kanban UI is clean, responsive, and doesn't get bogged down by endless enterprise bloat."
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
+                  <div className="size-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                    EW
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Elena Walsh</h5>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">VP of Engineering at Prism</p>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
 
             {/* Testimonial 2 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="size-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
-                  “The multi-workspace feature allows our agency to manage 15+ clients seamlessly. Each client has their own workspace with zero cross-contamination.”
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
-                <div className="size-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">
-                  ML
-                </div>
+            <ScrollReveal delay={100}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
                 <div>
-                  <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Marcus Lin</h5>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">Founder & CTO at NexusLab</p>
+                  <div className="flex items-center gap-1 text-amber-400 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="size-4 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
+                    "The multi-workspace feature allows our agency to manage 15+ clients seamlessly. Each client has their own workspace with zero cross-contamination."
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
+                  <div className="size-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">
+                    ML
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Marcus Lin</h5>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">Founder & CTO at NexusLab</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Testimonial 3 */}
-            <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="size-4 fill-amber-400" />
-                  ))}
-                </div>
-                <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
-                  “The sleek dark mode and snappy keyboard flow make using Flowio an absolute joy. It’s the first PM tool our developers actually love opening.”
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
-                <div className="size-9 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center">
-                  SA
-                </div>
+            <ScrollReveal delay={200}>
+              <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm flex flex-col justify-between">
                 <div>
-                  <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Sarah Al-Mansoor</h5>
-                  <p className="text-xs text-slate-500 dark:text-zinc-400">Staff Product Designer</p>
+                  <div className="flex items-center gap-1 text-amber-400 mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="size-4 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
+                    "The sleek dark mode and snappy keyboard flow make using Flowio an absolute joy. It's the first PM tool our developers actually love opening."
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
+                  <div className="size-9 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center">
+                    SA
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-semibold text-slate-900 dark:text-white">Sarah Al-Mansoor</h5>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">Staff Product Designer</p>
+                  </div>
                 </div>
               </div>
+            </ScrollReveal>
+          </div>
+
+          {/* Mobile Carousel */}
+          <div className="md:hidden">
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
+              >
+                {[
+                  {
+                    quote: "Flowio cut our weekly sprint planning overhead by half. The Kanban UI is clean, responsive, and doesn't get bogged down by endless enterprise bloat.",
+                    name: "Elena Walsh",
+                    role: "VP of Engineering at Prism",
+                    initials: "EW",
+                    color: "bg-blue-600",
+                  },
+                  {
+                    quote: "The multi-workspace feature allows our agency to manage 15+ clients seamlessly. Each client has their own workspace with zero cross-contamination.",
+                    name: "Marcus Lin",
+                    role: "Founder & CTO at NexusLab",
+                    initials: "ML",
+                    color: "bg-indigo-600",
+                  },
+                  {
+                    quote: "The sleek dark mode and snappy keyboard flow make using Flowio an absolute joy. It's the first PM tool our developers actually love opening.",
+                    name: "Sarah Al-Mansoor",
+                    role: "Staff Product Designer",
+                    initials: "SA",
+                    color: "bg-violet-600",
+                  },
+                ].map((t, i) => (
+                  <div key={i} className="w-full flex-shrink-0 px-2">
+                    <div className="p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm">
+                      <div className="flex items-center gap-1 text-amber-400 mb-4">
+                        {[...Array(5)].map((_, j) => (
+                          <Star key={j} className="size-4 fill-amber-400" />
+                        ))}
+                      </div>
+                      <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed italic">
+                        "{t.quote}"
+                      </p>
+                      <div className="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-3">
+                        <div className={`size-9 rounded-full ${t.color} text-white font-bold text-xs flex items-center justify-center`}>
+                          {t.initials}
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-semibold text-slate-900 dark:text-white">{t.name}</h5>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400">{t.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Carousel Dots */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {[0, 1, 2].map((i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveTestimonial(i)}
+                  className={`size-2 rounded-full transition-all duration-300 ${
+                    activeTestimonial === i
+                      ? "bg-blue-600 w-6"
+                      : "bg-slate-300 dark:bg-zinc-700"
+                  }`}
+                  aria-label={`Go to testimonial ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -699,21 +943,24 @@ const Home = () => {
       {/* PRICING SECTION */}
       <section id="pricing" className="relative z-10 py-20 bg-slate-100/60 dark:bg-zinc-900/30 border-y border-slate-200 dark:border-zinc-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Simple, Predictable Pricing
-            </h2>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
-              Start free, scale with your team
-            </h3>
-            <p className="mt-3 text-slate-600 dark:text-zinc-400">
-              No hidden fees. Upgrade or cancel anytime.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Simple, Predictable Pricing
+              </h2>
+              <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-950 dark:text-white">
+                Start free, scale with your team
+              </h3>
+              <p className="mt-3 text-slate-600 dark:text-zinc-400">
+                No hidden fees. Upgrade or cancel anytime.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
             {/* Starter Plan */}
-            <div className="p-8 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col justify-between">
+            <ScrollReveal delay={0}>
+              <div className="h-full p-8 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col justify-between">
               <div>
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white">Starter</h4>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">For freelancers and small teams</p>
@@ -743,9 +990,11 @@ const Home = () => {
                 {user ? "Go to Dashboard" : "Get Started Free"}
               </button>
             </div>
+            </ScrollReveal>
 
             {/* Pro Plan - Highlighted */}
-            <div className="relative p-8 rounded-2xl border-2 border-blue-600 dark:border-blue-500 bg-white dark:bg-zinc-900 shadow-xl shadow-blue-500/10 flex flex-col justify-between">
+            <ScrollReveal delay={100}>
+            <div className="relative h-full p-8 rounded-2xl border-2 border-blue-600 dark:border-blue-500 bg-white dark:bg-zinc-900 shadow-xl shadow-blue-500/10 flex flex-col justify-between">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-blue-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
                 Most Popular
               </div>
@@ -781,9 +1030,11 @@ const Home = () => {
                 {user ? "Go to Dashboard" : "Start 14-Day Free Trial"}
               </button>
             </div>
+            </ScrollReveal>
 
             {/* Enterprise Plan */}
-            <div className="p-8 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col justify-between">
+            <ScrollReveal delay={200}>
+            <div className="h-full p-8 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col justify-between">
               <div>
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white">Enterprise</h4>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">For larger scale organizations</p>
@@ -812,6 +1063,7 @@ const Home = () => {
                 Contact Sales
               </a>
             </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -819,14 +1071,16 @@ const Home = () => {
       {/* FAQ SECTION */}
       <section id="faq" className="relative z-10 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-              Got Questions?
-            </h2>
-            <h3 className="text-3xl font-extrabold text-slate-950 dark:text-white">
-              Frequently Asked Questions
-            </h3>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+                Got Questions?
+              </h2>
+              <h3 className="text-3xl font-extrabold text-slate-950 dark:text-white">
+                Frequently Asked Questions
+              </h3>
+            </div>
+          </ScrollReveal>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => {
@@ -860,9 +1114,10 @@ const Home = () => {
       </section>
 
       {/* CALL TO ACTION BANNER */}
-      <section className="relative z-10 py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 p-8 sm:p-12 text-center text-white overflow-hidden shadow-2xl shadow-blue-500/20">
+      <ScrollReveal>
+        <section className="relative z-10 py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 p-8 sm:p-12 text-center text-white overflow-hidden shadow-2xl shadow-blue-500/20">
             {/* Background Glow */}
             <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -889,6 +1144,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* FOOTER */}
       <footer className="relative z-10 border-t border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 py-12 transition-colors">
@@ -961,6 +1217,9 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      <BackToTop />
     </div>
   );
 };
