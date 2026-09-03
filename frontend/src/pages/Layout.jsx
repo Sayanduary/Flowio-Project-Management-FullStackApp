@@ -98,7 +98,7 @@ const Layout = () => {
   if (workspaces.length === 0) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center gap-4 bg-white dark:bg-zinc-950 p-4">
-        <CreateOrganization afterCreateOrganizationUrl="/" />
+        <CreateOrganization afterCreateOrganizationUrl="/dashboard" />
         <button
           onClick={() => dispatch(fetchWorkspaces({ getToken }))}
           className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"

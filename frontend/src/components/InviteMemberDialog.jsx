@@ -1,19 +1,55 @@
 import { useState } from "react";
 import { Mail, UserPlus } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "@clerk/react";
+import toast from "react-hot-toast";
+import api from "../configs/api";
+import { addWorkspaceMember, fetchWorkspaces } from "../features/workspaceSlice";
 
 const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
-
+    const dispatch = useDispatch();
+    const { getToken } = useAuth();
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
-        role: "org:member",
+        role: "MEMBER",
     });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!currentWorkspace?.id) return;
+        if (!formData.email) {
+            return toast.error("Please provide an email address");
+        }
 
+        try {
+            setIsSubmitting(true);
+            const token = await getToken();
+            const { data } = await api.post(
+                "/api/workspaces/add-member",
+                {
+                    email: formData.email,
+                    role: formData.role,
+                    workspaceId: currentWorkspace.id,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            if (data?.member) {
+                dispatch(addWorkspaceMember(data.member));
+            }
+            dispatch(fetchWorkspaces({ getToken }));
+            toast.success(data?.message || "Member invited successfully");
+            setFormData({ email: "", role: "MEMBER" });
+            setIsDialogOpen(false);
+        } catch (error) {
+            toast.error(error?.response?.data?.message || error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isDialogOpen) return null;
@@ -50,8 +86,8 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-zinc-900 dark:text-zinc-200">Role</label>
                         <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 py-2 px-3 mt-1 focus:outline-none focus:border-blue-500 text-sm" >
-                            <option value="org:member">Member</option>
-                            <option value="org:admin">Admin</option>
+                            <option value="MEMBER">Member</option>
+                            <option value="ADMIN">Admin</option>
                         </select>
                     </div>
 

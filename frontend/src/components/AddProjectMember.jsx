@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Mail, UserPlus } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@clerk/react";
+import toast from "react-hot-toast";
+import api from "../configs/api";
+import { addProjectMember, fetchWorkspaces } from "../features/workspaceSlice";
 
 const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
-
+    const dispatch = useDispatch();
+    const { getToken } = useAuth();
     const [searchParams] = useSearchParams();
 
     const id = searchParams.get('id');
@@ -12,14 +17,38 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
 
     const project = currentWorkspace?.projects.find((p) => p.id === id);
-    const projectMembersEmails = project?.members.map((member) => member.user.email);
+    const projectMembersUserIds = (project?.members || []).map((member) => member.userId || member.user?.id);
 
-    const [email, setEmail] = useState('');
+    const [selectedMemberId, setSelectedMemberId] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        if (!id || !selectedMemberId) {
+            return toast.error("Please select a member to add");
+        }
+
+        try {
+            setIsAdding(true);
+            const token = await getToken();
+            const { data } = await api.post(
+                `/api/projects/${id}/addMember`,
+                { memberId: selectedMemberId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (data?.member) {
+                dispatch(addProjectMember({ projectId: id, member: data.member }));
+            }
+            dispatch(fetchWorkspaces({ getToken }));
+            toast.success(data?.message || "Member added to project successfully");
+            setSelectedMemberId('');
+            setIsDialogOpen(false);
+        } catch (error) {
+            toast.error(error?.response?.data?.message || error.message);
+        } finally {
+            setIsAdding(false);
+        }
     };
 
     if (!isDialogOpen) return null;
@@ -32,7 +61,7 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         <UserPlus className="size-5 text-zinc-900 dark:text-zinc-200" /> Add Member to Project
                     </h2>
-                    {currentWorkspace && (
+                    {currentWorkspace && project && (
                         <p className="text-sm text-zinc-700 dark:text-zinc-400">
                             Adding to Project: <span className="text-blue-600 dark:text-blue-400">{project.name}</span>
                         </p>
@@ -41,20 +70,22 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Email */}
+                    {/* Member */}
                     <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium text-zinc-900 dark:text-zinc-200">
-                            Email Address
+                        <label htmlFor="member" className="text-sm font-medium text-zinc-900 dark:text-zinc-200">
+                            Select Workspace Member
                         </label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 w-4 h-4" />
                             {/* List All non project members from current workspace */}
-                            <select value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 mt-1 w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 py-2 focus:outline-none focus:border-blue-500" required >
+                            <select value={selectedMemberId} onChange={(e) => setSelectedMemberId(e.target.value)} className="pl-10 mt-1 w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 py-2 focus:outline-none focus:border-blue-500" required >
                                 <option value="">Select a member</option>
                                 {currentWorkspace?.members
-                                    .filter((member) => !projectMembersEmails.includes(member.user.email))
+                                    ?.filter((member) => !projectMembersUserIds.includes(member.user?.id || member.userId))
                                     .map((member) => (
-                                        <option key={member.user.id} value={member.user.email}> {member.user.email} </option>
+                                        <option key={member.user?.id || member.id} value={member.user?.id}>
+                                            {member.user?.name ? `${member.user.name} (${member.user.email})` : member.user?.email}
+                                        </option>
                                     ))}
                             </select>
                         </div>

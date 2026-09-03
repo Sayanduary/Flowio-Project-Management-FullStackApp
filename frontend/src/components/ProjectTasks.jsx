@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/react";
+import api from "../configs/api";
 import { deleteTask, updateTask } from "../features/workspaceSlice";
 import { Bug, CalendarIcon, GitCommit, MessageSquare, Square, Trash, XIcon, Zap } from "lucide-react";
 
@@ -23,6 +25,7 @@ const priorityTexts = {
 const ProjectTasks = ({ tasks }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { getToken } = useAuth();
     const [selectedTasks, setSelectedTasks] = useState([]);
 
     const [filters, setFilters] = useState({
@@ -55,40 +58,73 @@ const ProjectTasks = ({ tasks }) => {
     };
 
     const handleStatusChange = async (taskId, newStatus) => {
+        const toastId = toast.loading("Updating status...");
         try {
-            toast.loading("Updating status...");
+            const token = await getToken();
+            const { data } = await api.put(
+                `/api/tasks/${taskId}`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-            //  Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            let updatedTask = structuredClone(tasks.find((t) => t.id === taskId));
-            updatedTask.status = newStatus;
-            dispatch(updateTask(updatedTask));
-
-            toast.dismissAll();
+            if (data?.task) {
+                dispatch(updateTask(data.task));
+            }
+            toast.dismiss(toastId);
             toast.success("Task status updated successfully");
         } catch (error) {
-            toast.dismissAll();
+            toast.dismiss(toastId);
             toast.error(error?.response?.data?.message || error.message);
         }
     };
 
     const handleDelete = async () => {
+        if (!selectedTasks || selectedTasks.length === 0) return;
+        const confirm = window.confirm("Are you sure you want to delete the selected tasks?");
+        if (!confirm) return;
+
+        const toastId = toast.loading("Deleting tasks...");
         try {
-            const confirm = window.confirm("Are you sure you want to delete the selected tasks?");
-            if (!confirm) return;
+            const token = await getToken();
+            await Promise.all(
+                selectedTasks.map((taskId) =>
+                    api.delete(`/api/tasks/${taskId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    })
+                )
+            );
 
-            toast.loading("Deleting tasks...");
+            const projectId = tasks.find((t) => selectedTasks.includes(t.id))?.projectId;
+            dispatch(deleteTask({ projectId, taskIds: selectedTasks }));
+            setSelectedTasks([]);
 
-            //  Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            dispatch(deleteTask(selectedTasks));
-
-            toast.dismissAll();
+            toast.dismiss(toastId);
             toast.success("Tasks deleted successfully");
         } catch (error) {
-            toast.dismissAll();
+            toast.dismiss(toastId);
+            toast.error(error?.response?.data?.message || error.message);
+        }
+    };
+
+    const handleDeleteSingle = async (taskId) => {
+        const confirm = window.confirm("Are you sure you want to delete this task?");
+        if (!confirm) return;
+
+        const toastId = toast.loading("Deleting task...");
+        try {
+            const token = await getToken();
+            await api.delete(`/api/tasks/${taskId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const projectId = tasks.find((t) => t.id === taskId)?.projectId;
+            dispatch(deleteTask({ projectId, taskId }));
+            setSelectedTasks((prev) => prev.filter((id) => id !== taskId));
+
+            toast.dismiss(toastId);
+            toast.success("Task deleted successfully");
+        } catch (error) {
+            toast.dismiss(toastId);
             toast.error(error?.response?.data?.message || error.message);
         }
     };
@@ -208,6 +244,16 @@ const ProjectTasks = ({ tasks }) => {
                                                         {format(new Date(task.due_date), "dd MMMM")}
                                                     </div>
                                                 </td>
+                                                <td onClick={(e) => e.stopPropagation()} className="px-2 py-2 text-right">
+                                                    <button
+                                                        type="button"
+                                                        title="Delete Task"
+                                                        onClick={() => handleDeleteSingle(task.id)}
+                                                        className="p-1 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition opacity-0 group-hover:opacity-100 cursor-pointer"
+                                                    >
+                                                        <Trash className="size-3.5" />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         );
                                     })
@@ -233,7 +279,17 @@ const ProjectTasks = ({ tasks }) => {
                                     <div key={task.id} className=" dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4 flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-zinc-900 dark:text-zinc-200 text-sm font-semibold">{task.title}</h3>
-                                            <input type="checkbox" className="size-4 accent-zinc-600 dark:accent-zinc-500" onChange={() => selectedTasks.includes(task.id) ? setSelectedTasks(selectedTasks.filter((i) => i !== task.id)) : setSelectedTasks((prev) => [...prev, task.id])} checked={selectedTasks.includes(task.id)} />
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    title="Delete Task"
+                                                    onClick={() => handleDeleteSingle(task.id)}
+                                                    className="p-1 rounded text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
+                                                >
+                                                    <Trash className="size-3.5" />
+                                                </button>
+                                                <input type="checkbox" className="size-4 accent-zinc-600 dark:accent-zinc-500" onChange={() => selectedTasks.includes(task.id) ? setSelectedTasks(selectedTasks.filter((i) => i !== task.id)) : setSelectedTasks((prev) => [...prev, task.id])} checked={selectedTasks.includes(task.id)} />
+                                            </div>
                                         </div>
 
                                         <div className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-2">

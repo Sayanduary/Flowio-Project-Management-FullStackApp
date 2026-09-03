@@ -21,14 +21,14 @@ function WorkspaceDropdown() {
   const onSelectWorkspace = (organizationId) => {
     dispatch(setCurrentWorkspace(organizationId));
     setIsOpen(false);
-    navigate("/");
+    navigate("/dashboard");
   };
 
   const handleCreateWorkspace = () => {
     setIsOpen(false);
     if (openCreateOrganization) {
       openCreateOrganization({
-        afterCreateOrganizationUrl: "/",
+        afterCreateOrganizationUrl: "/dashboard",
       });
     }
   };

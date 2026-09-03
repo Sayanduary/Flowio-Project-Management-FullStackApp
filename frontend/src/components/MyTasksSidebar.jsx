@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import { CheckSquareIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { useUser } from '@clerk/react';
 
 function MyTasksSidebar() {
-
-    const user = { id: 'user_1' }
-
+    const { user } = useUser();
     const { currentWorkspace } = useSelector((state) => state.workspace);
     const [showMyTasks, setShowMyTasks] = useState(false);
     const [myTasks, setMyTasks] = useState([]);
@@ -28,17 +27,25 @@ function MyTasksSidebar() {
 
     const fetchUserTasks = () => {
         const userId = user?.id || '';
-        if (!userId || !currentWorkspace) return;
+        const userEmail = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '';
+        if (!userId || !currentWorkspace?.projects) {
+            setMyTasks([]);
+            return;
+        }
         const currentWorkspaceTasks = currentWorkspace.projects.flatMap((project) => {
-            return project.tasks.filter((task) => task?.assignee?.id === userId);
+            return (project.tasks || []).filter((task) =>
+                task?.assigneeId === userId ||
+                task?.assignee?.id === userId ||
+                (userEmail && task?.assignee?.email === userEmail)
+            );
         });
 
         setMyTasks(currentWorkspaceTasks);
-    }
+    };
 
     useEffect(() => {
-        fetchUserTasks()
-    }, [currentWorkspace])
+        fetchUserTasks();
+    }, [currentWorkspace, user]);
 
     return (
         <div className="mt-6 px-3">

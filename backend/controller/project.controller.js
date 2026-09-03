@@ -88,21 +88,26 @@ export const createProject = async (req, res) => {
       },
     });
 
-    // Add project members
-    if (Array.isArray(team_members) && team_members.length > 0) {
-      const membersToAdd = workspace.members
-        .filter((member) => team_members.includes(member.user.email))
-        .map((member) => ({
-          projectId: project.id,
-          userId: member.userId,
-        }));
+    // Add project members (including team lead)
+    const membersToInclude = Array.isArray(team_members)
+      ? [...team_members]
+      : [];
+    if (!membersToInclude.includes(team_lead)) {
+      membersToInclude.push(team_lead);
+    }
 
-      if (membersToAdd.length > 0) {
-        await prisma.projectMember.createMany({
-          data: membersToAdd,
-          skipDuplicates: true,
-        });
-      }
+    const membersToAdd = workspace.members
+      .filter((member) => membersToInclude.includes(member.user.email))
+      .map((member) => ({
+        projectId: project.id,
+        userId: member.userId,
+      }));
+
+    if (membersToAdd.length > 0) {
+      await prisma.projectMember.createMany({
+        data: membersToAdd,
+        skipDuplicates: true,
+      });
     }
 
     // Get complete project
@@ -181,6 +186,13 @@ export const updateProject = async (req, res) => {
       where: {
         id: projectId,
       },
+      include: {
+        workspace: {
+          include: {
+            members: true,
+          },
+        },
+      },
     });
 
     if (!project) {
@@ -189,10 +201,16 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    // Only project lead can update
-    if (project.team_lead !== userId) {
+    // Check permissions: Project Lead, Workspace Owner, or Workspace Admin
+    const isProjectLead = project.team_lead === userId;
+    const isWorkspaceOwner = project.workspace?.ownerId === userId;
+    const isWorkspaceAdmin = project.workspace?.members.some(
+      (m) => m.userId === userId && m.role === "ADMIN",
+    );
+
+    if (!isProjectLead && !isWorkspaceOwner && !isWorkspaceAdmin) {
       return res.status(403).json({
-        message: "Only the project lead can update this project",
+        message: "Only the project lead or workspace admin can update this project",
       });
     }
 
@@ -405,6 +423,105 @@ export const addMember = async (req, res) => {
         message: "User is already a member of this project",
       });
     }
+
+    return res.status(500).json({
+      message: error.code || error.message,
+    });
+  }
+};
+
+// ==========================================
+// DELETE PROJECT
+// Project Lead or Workspace Admin/Owner
+// ==========================================
+export const deleteProject = async (req, res) => {
+  try {
+    const { userId } = await req.auth();
+
+    const projectId =
+      req.params.projectId || req.params.id || req.body.projectId || req.body.id;
+
+    if (!projectId) {
+      return res.status(400).json({
+        message: "projectId is required",
+      });
+    }
+
+    // Find project and workspace
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+      include: {
+        workspace: {
+          include: {
+            members: true,
+          },
+        },
+        tasks: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project Not Found",
+      });
+    }
+
+    // Check permissions: Project Lead, Workspace Owner, or Workspace Admin
+    const isProjectLead = project.team_lead === userId;
+    const isWorkspaceOwner = project.workspace.ownerId === userId;
+    const isWorkspaceAdmin = project.workspace.members.some(
+      (m) => m.userId === userId && m.role === "ADMIN",
+    );
+
+    if (!isProjectLead && !isWorkspaceOwner && !isWorkspaceAdmin) {
+      return res.status(403).json({
+        message: "Only the project lead or workspace admin can delete this project",
+      });
+    }
+
+    // Clean up task comments first if tasks exist
+    const taskIds = project.tasks.map((t) => t.id);
+    if (taskIds.length > 0) {
+      await prisma.comment.deleteMany({
+        where: {
+          taskId: { in: taskIds },
+        },
+      });
+    }
+
+    // Delete tasks
+    await prisma.task.deleteMany({
+      where: {
+        projectId,
+      },
+    });
+
+    // Delete project members
+    await prisma.projectMember.deleteMany({
+      where: {
+        projectId,
+      },
+    });
+
+    // Delete project
+    await prisma.project.delete({
+      where: {
+        id: projectId,
+      },
+    });
+
+    return res.json({
+      message: "Project Deleted Successfully",
+      projectId,
+    });
+  } catch (error) {
+    console.error("Delete Project Error:", error);
 
     return res.status(500).json({
       message: error.code || error.message,
