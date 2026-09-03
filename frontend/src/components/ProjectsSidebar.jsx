@@ -28,47 +28,67 @@ const ProjectSidebar = () => {
     };
 
     return (
-        <div className="mt-6 px-3">
-            <div className="flex items-center justify-between px-3 py-2">
-                <h3 className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="mt-4 px-3">
+            <div className="flex items-center justify-between px-3.5 py-2">
+                <h3 className="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
                     Projects
                 </h3>
-                <Link to="/projects">
-                    <button className="size-5 text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded flex items-center justify-center transition-colors duration-200">
+                <Link to="/projects" title="View all projects">
+                    <span className="size-5 text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 rounded flex items-center justify-center transition-colors">
                         <ArrowRightIcon className="size-3" />
-                    </button>
+                    </span>
                 </Link>
             </div>
 
-            <div className="space-y-1 px-3">
-                {projects.map((project) => (
-                    <div key={project.id}>
-                        <button onClick={() => toggleProject(project.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-200 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white" >
-                            <ChevronRightIcon className={`size-3 text-gray-500 dark:text-zinc-400 transition-transform duration-200 ${expandedProjects.has(project.id) && 'rotate-90'}`} />
-                            <div className="size-2 rounded-full bg-blue-500" />
-                            <span className="truncate max-w-40 text-sm">{project.name}</span>
-                        </button>
-
-                        {expandedProjects.has(project.id) && (
-                            <div className="ml-5 mt-1 space-y-1">
-                                {getProjectSubItems(project.id).map((subItem) => {
-                                    // checking if the current path matches the sub-item's URL
-                                    const isActive =
-                                        location.pathname === `/projectsDetail` &&
-                                        searchParams.get('id') === project.id &&
-                                        searchParams.get('tab') === subItem.title.toLowerCase();
-
-                                    return (
-                                        <Link key={subItem.title} to={subItem.url} className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors duration-200 text-xs ${isActive ? 'bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20' : 'text-gray-600 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800'}`} >
-                                            <subItem.icon className="size-3" />
-                                            {subItem.title}
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
+            <div className="space-y-0.5 px-1">
+                {projects.length === 0 ? (
+                    <div className="px-3 py-2 text-xs text-slate-400 dark:text-zinc-500 italic">
+                        No projects yet
                     </div>
-                ))}
+                ) : (
+                    projects.map((project) => (
+                        <div key={project.id}>
+                            <button
+                                onClick={() => toggleProject(project.id)}
+                                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-slate-700 dark:text-zinc-300 hover:bg-slate-100/80 dark:hover:bg-zinc-900/60 hover:text-slate-900 dark:hover:text-white text-left"
+                            >
+                                <ChevronRightIcon
+                                    className={`size-3 text-slate-400 dark:text-zinc-500 transition-transform duration-200 ${
+                                        expandedProjects.has(project.id) ? 'rotate-90' : ''
+                                    }`}
+                                />
+                                <div className="size-2 rounded-full bg-blue-500 flex-shrink-0" />
+                                <span className="truncate max-w-[150px] text-xs font-medium">{project.name}</span>
+                            </button>
+
+                            {expandedProjects.has(project.id) && (
+                                <div className="ml-4 pl-2 border-l border-slate-200 dark:border-zinc-800 mt-1 space-y-0.5">
+                                    {getProjectSubItems(project.id).map((subItem) => {
+                                        const isActive =
+                                            location.pathname === `/projectsDetail` &&
+                                            searchParams.get('id') === project.id &&
+                                            searchParams.get('tab') === subItem.title.toLowerCase();
+
+                                        return (
+                                            <Link
+                                                key={subItem.title}
+                                                to={subItem.url}
+                                                className={`flex items-center gap-2 px-2.5 py-1 rounded-md transition-colors text-xs ${
+                                                    isActive
+                                                        ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-medium'
+                                                        : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-zinc-900/50'
+                                                }`}
+                                            >
+                                                <subItem.icon className="size-3 flex-shrink-0" />
+                                                <span>{subItem.title}</span>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

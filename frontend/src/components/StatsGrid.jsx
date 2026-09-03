@@ -102,31 +102,29 @@ export default function StatsGrid() {
   }, [currentWorkspace, userId, userEmail]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-9">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 my-6">
       {statCards.map(
         ({ icon: Icon, title, value, subtitle, bgColor, textColor }, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition duration-200 rounded-md"
+            className="p-5 rounded-xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 group"
           >
-            <div className="p-6 py-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
-                    {title}
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                  {title}
+                </p>
+                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
+                  {value}
+                </p>
+                {subtitle && (
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1 truncate max-w-[150px]">
+                    {subtitle}
                   </p>
-                  <p className="text-3xl font-bold text-zinc-800 dark:text-white">
-                    {value}
-                  </p>
-                  {subtitle && (
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-                      {subtitle}
-                    </p>
-                  )}
-                </div>
-                <div className={`p-3 rounded-xl ${bgColor} bg-opacity-20`}>
-                  <Icon size={20} className={textColor} />
-                </div>
+                )}
+              </div>
+              <div className={`p-2.5 rounded-xl ${bgColor} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                <Icon size={20} className={textColor} />
               </div>
             </div>
           </div>
