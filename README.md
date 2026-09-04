@@ -2,7 +2,7 @@
 
 A full-stack project management application for agile teams, featuring workspace collaboration, Kanban boards, calendar views, analytics dashboards, and email notifications.
 
-**Live:** https://flowio-sigma.vercel.app
+**Live:** https://flowio-project-management.vercel.app/
 
 ---
 
