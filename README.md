@@ -583,7 +583,7 @@ npm start
 
 ## Deployment
 
-The app is deployed on **Vercel** at https://flowio-sigma.vercel.app
+The Backend is deployed on **Vercel** at https://flowio-sigma.vercel.app
 
 - **Backend:** Deployed as a Vercel serverless function via `@vercel/node`. The `process.env.VERCEL` check prevents `app.listen()` from running in serverless mode.
 - **Frontend:** Deployed as a Vercel static site with SPA rewrite rules.
